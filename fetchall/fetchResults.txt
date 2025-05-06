@@ -1,0 +1,6 @@
+                           Url               Number of bytes                 Time to fetch
+            https://pkg.go.dev                         33482                   [0.33 0.33]
+          https://chat.qwen.ai                         26864                   [0.47 0.68]
+   https://practicum.yandex.ru                       1482699                   [0.47 0.65]
+      https://www.codewars.com                        149319                   [0.56 0.57]
+        https://app.pachca.com                          4425                   [0.13 0.13]
