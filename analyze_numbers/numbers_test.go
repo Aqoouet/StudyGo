@@ -241,16 +241,16 @@ func TestOdd(t *testing.T) { // TestFreq
 	}
 }
 
-// func TestRanges(t *testing.T) { // TestFreq
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			ans := getRanges(tt.input)              // getFreq
-// 			if !reflect.DeepEqual(tt.ranges, ans) { // tt.freq
-// 				t.Errorf("got %v, expected %v", ans, tt.ranges) // tt.freq
-// 			}
-// 		})
-// 	}
-// }
+func TestRanges(t *testing.T) { // TestFreq
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ans := getRanges(tt.input, tt.size)     // getFreq
+			if !reflect.DeepEqual(tt.ranges, ans) { // tt.freq
+				t.Errorf("got %v, expected %v", ans, tt.ranges) // tt.freq
+			}
+		})
+	}
+}
 
 func TestMedian(t *testing.T) { // TestFreq
 	for _, tt := range tests {

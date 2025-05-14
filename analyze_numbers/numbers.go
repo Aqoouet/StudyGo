@@ -1,5 +1,10 @@
 package main
 
+import (
+	"fmt"
+	"strconv"
+)
+
 func sortSlice(a []int) []int {
 	if len(a) <= 1 {
 		return a
@@ -157,31 +162,47 @@ func getOdd(a []int) []int {
 	return rez
 }
 
-// func getRanges(a []int, size int) map[string][]int {
+func getStartEnd(i int, size int) (int, int) {
 
-// 	var Diap struct {
-// 		prt string
-// 		startD int
-// 		endD int
-// 	}
+	var start int
 
-// 	if len(a)==0 || size == 0 {
-// 		return map[string][]int{}
-// 	}
+	if i >= 0 {
 
-// 	var ranges []string
+		start = (i / size) * size
 
-// 	for _,i L= range a {
+	} else {
 
-// 		d := Diap {
-// 			prt:string(append([]rune(start),[]rune(start)...)),
-// 			startD:(num \ size) * size,
-// 			endD:start + size - 1,
-// 		}
-// 	}
+		start = ((i+1)/size)*size - size
 
-// 	return map[string][]int{}
-// }
+	}
+
+	end := start + size - 1
+
+	return start, end
+
+}
+
+func getRanges(a []int, size int) map[string][]int {
+
+	if len(a) == 0 || size == 0 {
+		return map[string][]int{}
+	}
+
+	rez := map[string][]int{}
+
+	for _, i := range a {
+
+		start, end := getStartEnd(i, size)
+		key1 := []rune(strconv.Itoa(start))
+		key2 := []rune(strconv.Itoa(end))
+		d := []rune("-")
+		key := string(append(append(key1, d...), key2...))
+		rez[key] = append(rez[key], i)
+
+	}
+
+	return rez
+}
 
 func getMedian(a []int) int {
 	if len(a) == 0 {
@@ -241,4 +262,15 @@ func getAboveAvg(a []int) []int {
 	}
 
 	return rez
+}
+
+func analyzeNumbers(a []int, size int) string {
+
+	return fmt.Sprintf("Частота: %v\nМинимум: %v, Максимум: %v, Среднее: %v\nМода: %v\nЧётные: %v, Нечётные: %v\nДиапазоны (размер %v): %v\nМедиана: %v\nУникальные: %v\nЧисла выше среднего: %v\n",
+		getFreq(a), getMin(a), getMax(a), getAvg(a), getMode(a), getEven(a), getOdd(a), size, getRanges(a, size), getMedian(a), getUnique(a), getAboveAvg(a))
+
+}
+
+func main() {
+	fmt.Println(analyzeNumbers([]int{1, 2, 1, 3, 2}, 2))
 }
