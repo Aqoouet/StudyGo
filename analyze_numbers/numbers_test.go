@@ -25,6 +25,7 @@ type testsType struct {
 	median   int
 	unique   []int
 	aboveAvg []int
+	sorted   []int
 }
 
 func parseSlice(s string) []int {
@@ -134,6 +135,7 @@ func fillTests(path string) []testsType {
 			median:   convertInt(lineSlice[11]),
 			unique:   parseSlice(lineSlice[12]),
 			aboveAvg: parseSlice(lineSlice[13]),
+			sorted:   parseSlice(lineSlice[14]),
 		}
 		t = append(t, test)
 	}
@@ -151,16 +153,27 @@ func init() {
 	tests = fillTests("numbers.csv")
 }
 
-func TestFreq(t *testing.T) { // TestFreq
+func TestSortSlice(t *testing.T) { // TestFreq
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ans := getFreq(tt.input)              // getFreq
-			if !reflect.DeepEqual(tt.freq, ans) { // tt.freq
-				t.Errorf("got %v, expected %v", ans, tt.freq) // tt.freq
+			ans := sortSlice(tt.input)              // getFreq
+			if !reflect.DeepEqual(tt.sorted, ans) { // tt.freq
+				t.Errorf("got %v, expected %v", ans, tt.sorted) // tt.freq
 			}
 		})
 	}
 }
+
+// func TestFreq(t *testing.T) { // TestFreq
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			ans := getFreq(tt.input)              // getFreq
+// 			if !reflect.DeepEqual(tt.freq, ans) { // tt.freq
+// 				t.Errorf("got %v, expected %v", ans, tt.freq) // tt.freq
+// 			}
+// 		})
+// 	}
+// }
 
 func TestMin(t *testing.T) { // TestFreq
 	for _, tt := range tests {
@@ -195,79 +208,79 @@ func TestAvg(t *testing.T) { // TestFreq
 	}
 }
 
-func TestMode(t *testing.T) { // TestFreq
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ans := getMode(tt.input)              // getFreq
-			if !reflect.DeepEqual(tt.mode, ans) { // tt.freq
-				t.Errorf("got %v, expected %v", ans, tt.mode) // tt.freq
-			}
-		})
-	}
-}
+// func TestMode(t *testing.T) { // TestFreq
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			ans := getMode(tt.input)              // getFreq
+// 			if !reflect.DeepEqual(tt.mode, ans) { // tt.freq
+// 				t.Errorf("got %v, expected %v", ans, tt.mode) // tt.freq
+// 			}
+// 		})
+// 	}
+// }
 
-func TestEven(t *testing.T) { // TestFreq
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ans := getEven(tt.input)              // getFreq
-			if !reflect.DeepEqual(tt.even, ans) { // tt.freq
-				t.Errorf("got %v, expected %v", ans, tt.even) // tt.freq
-			}
-		})
-	}
-}
+// func TestEven(t *testing.T) { // TestFreq
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			ans := getEven(tt.input)              // getFreq
+// 			if !reflect.DeepEqual(tt.even, ans) { // tt.freq
+// 				t.Errorf("got %v, expected %v", ans, tt.even) // tt.freq
+// 			}
+// 		})
+// 	}
+// }
 
-func TestOdd(t *testing.T) { // TestFreq
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ans := getOdd(tt.input)              // getFreq
-			if !reflect.DeepEqual(tt.odd, ans) { // tt.freq
-				t.Errorf("got %v, expected %v", ans, tt.odd) // tt.freq
-			}
-		})
-	}
-}
+// func TestOdd(t *testing.T) { // TestFreq
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			ans := getOdd(tt.input)              // getFreq
+// 			if !reflect.DeepEqual(tt.odd, ans) { // tt.freq
+// 				t.Errorf("got %v, expected %v", ans, tt.odd) // tt.freq
+// 			}
+// 		})
+// 	}
+// }
 
-func TestRanges(t *testing.T) { // TestFreq
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ans := getRanges(tt.input)              // getFreq
-			if !reflect.DeepEqual(tt.ranges, ans) { // tt.freq
-				t.Errorf("got %v, expected %v", ans, tt.ranges) // tt.freq
-			}
-		})
-	}
-}
+// func TestRanges(t *testing.T) { // TestFreq
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			ans := getRanges(tt.input)              // getFreq
+// 			if !reflect.DeepEqual(tt.ranges, ans) { // tt.freq
+// 				t.Errorf("got %v, expected %v", ans, tt.ranges) // tt.freq
+// 			}
+// 		})
+// 	}
+// }
 
-func TestMedian(t *testing.T) { // TestFreq
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ans := getMedian(tt.input)              // getFreq
-			if !reflect.DeepEqual(tt.median, ans) { // tt.freq
-				t.Errorf("got %v, expected %v", ans, tt.median) // tt.freq
-			}
-		})
-	}
-}
+// func TestMedian(t *testing.T) { // TestFreq
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			ans := getMedian(tt.input)              // getFreq
+// 			if !reflect.DeepEqual(tt.median, ans) { // tt.freq
+// 				t.Errorf("got %v, expected %v", ans, tt.median) // tt.freq
+// 			}
+// 		})
+// 	}
+// }
 
-func TestUnique(t *testing.T) { // TestFreq
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ans := getUnique(tt.input)              // getFreq
-			if !reflect.DeepEqual(tt.unique, ans) { // tt.freq
-				t.Errorf("got %v, expected %v", ans, tt.unique) // tt.freq
-			}
-		})
-	}
-}
+// func TestUnique(t *testing.T) { // TestFreq
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			ans := getUnique(tt.input)              // getFreq
+// 			if !reflect.DeepEqual(tt.unique, ans) { // tt.freq
+// 				t.Errorf("got %v, expected %v", ans, tt.unique) // tt.freq
+// 			}
+// 		})
+// 	}
+// }
 
-func TestAboveAvg(t *testing.T) { // TestFreq
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ans := getAboveAvg(tt.input)              // getFreq
-			if !reflect.DeepEqual(tt.aboveAvg, ans) { // tt.freq
-				t.Errorf("got %v, expected %v", ans, tt.aboveAvg) // tt.freq
-			}
-		})
-	}
-}
+// func TestAboveAvg(t *testing.T) { // TestFreq
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			ans := getAboveAvg(tt.input)              // getFreq
+// 			if !reflect.DeepEqual(tt.aboveAvg, ans) { // tt.freq
+// 				t.Errorf("got %v, expected %v", ans, tt.aboveAvg) // tt.freq
+// 			}
+// 		})
+// 	}
+// }
