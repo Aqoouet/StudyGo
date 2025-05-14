@@ -21,9 +21,20 @@ func sortSlice(a []int) []int {
 	return append(append(sortSlice(left), middle...), sortSlice(right)...)
 }
 
-// func getFreq(a []int) map[int]int {
-// 	return map[int]int{}
-// }
+func getFreq(a []int) map[int]int {
+
+	if len(a) == 0 {
+		return map[int]int{}
+	}
+
+	var rez = map[int]int{}
+
+	for _, i := range a {
+		rez[i] += 1
+	}
+
+	return rez
+}
 
 func getMin(a []int) int {
 
@@ -53,7 +64,9 @@ func getMax(a []int) int {
 }
 
 func roundDown(a float64) int {
-	if a < 0 {
+	if float64(int(a)) == a {
+		return int(a)
+	} else if a < 0 {
 		return int(a) - 1
 	} else if a > 0 {
 		return int(a)
@@ -84,30 +97,148 @@ func getAvg(a []int) int {
 	return roundDown(s / count)
 }
 
-// func getMode(a []int) []int {
-// 	return []int{}
-// }
+func getMode(a []int) []int {
 
-// func getEven(a []int) []int {
-// 	return []int{}
-// }
+	if len(a) == 0 {
+		return []int{}
+	}
 
-// func getOdd(a []int) []int {
-// 	return []int{}
-// }
+	freq := getFreq(a)
+
+	count := 0
+
+	for _, i := range freq {
+		if i > count {
+			count = i
+		}
+	}
+
+	var rez = []int{}
+
+	for key, i := range freq {
+		if i == count {
+			rez = append(rez, key)
+		}
+	}
+
+	return sortSlice(rez)
+}
+
+func getEven(a []int) []int {
+
+	if len(a) == 0 {
+		return []int{}
+	}
+
+	var rez = []int{}
+
+	for _, i := range a {
+		if i%2 == 0 {
+			rez = append(rez, i)
+		}
+	}
+
+	return rez
+}
+
+func getOdd(a []int) []int {
+	if len(a) == 0 {
+		return []int{}
+	}
+
+	var rez = []int{}
+
+	for _, i := range a {
+		if i%2 != 0 {
+			rez = append(rez, i)
+		}
+	}
+
+	return rez
+}
 
 // func getRanges(a []int, size int) map[string][]int {
+
+// 	var Diap struct {
+// 		prt string
+// 		startD int
+// 		endD int
+// 	}
+
+// 	if len(a)==0 || size == 0 {
+// 		return map[string][]int{}
+// 	}
+
+// 	var ranges []string
+
+// 	for _,i L= range a {
+
+// 		d := Diap {
+// 			prt:string(append([]rune(start),[]rune(start)...)),
+// 			startD:(num \ size) * size,
+// 			endD:start + size - 1,
+// 		}
+// 	}
+
 // 	return map[string][]int{}
 // }
 
-// func getMedian(a []int) int {
-// 	return 0
-// }
+func getMedian(a []int) int {
+	if len(a) == 0 {
+		return 0
+	}
 
-// func getUnique(a []int) []int {
-// 	return []int{}
-// }
+	if len(a) == 1 {
+		return a[0]
+	}
 
-// func getAboveAvg(a []int) []int {
-// 	return []int{}
-// }
+	sorted := sortSlice(a)
+
+	var med float64
+
+	if len(a)%2 == 0 {
+		left := float64(sorted[len(a)/2-1])
+		right := float64(sorted[len(a)/2])
+		med = (left + right) / 2
+		return roundDown(med)
+	} else {
+		return sorted[len(a)/2]
+	}
+
+}
+
+func getUnique(a []int) []int {
+
+	if len(a) == 0 {
+		return []int{}
+	}
+
+	freq := getFreq(a)
+
+	var rez = []int{}
+
+	for key, _ := range freq {
+		rez = append(rez, key)
+	}
+
+	return sortSlice(rez)
+}
+
+func getAboveAvg(a []int) []int {
+
+	if len(a) == 0 {
+		return []int{}
+	}
+
+	avg := getAvg(a)
+
+	var rez = []int{}
+
+	for _, i := range a {
+		if i >= avg {
+			rez = append(rez, i)
+		}
+	}
+
+	return rez
+}
