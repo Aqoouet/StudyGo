@@ -1,10 +1,16 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
+	"os"
+	"reflect"
+	"strconv"
+	"strings"
 	"testing"
 )
 
-var tests = []struct {
+type testsType struct {
 	name     string
 	input    []int
 	size     int
@@ -19,249 +25,262 @@ var tests = []struct {
 	median   int
 	unique   []int
 	aboveAvg []int
-}{
-	{
-		name:     "стандартный вариант 1", //0
-		input:    []int{1, 2, 1, 3, 2},
-		size:     2,
-		freq:     map[int]int{1: 2, 2: 2, 3: 1},
-		min:      1,
-		max:      3,
-		avg:      1,
-		mode:     []int{1, 2},
-		even:     []int{2, 2},
-		odd:      []int{1, 1, 3},
-		ranges:   map[string][]int{"0-2": {1, 1}, "3-4": {2, 2, 3}},
-		median:   2,
-		unique:   []int{1, 2, 3},
-		aboveAvg: []int{2, 2, 3},
-	},
-	{
-		name:     "много больших цифр", //1
-		input:    []int{10, 20, 10, 30, 40, 50, 40, 30, 20, 10},
-		size:     20,
-		freq:     map[int]int{10: 3, 20: 2, 30: 2, 40: 2, 50: 1},
-		min:      10,
-		max:      50,
-		avg:      25,
-		mode:     []int{10},
-		even:     []int{10, 20, 10, 30, 40, 50, 40, 30, 20, 10},
-		odd:      []int{},
-		ranges:   map[string][]int{"10-30": {10, 20, 10, 20}, "31-50": {30, 40, 50, 40, 30}},
-		median:   25,
-		unique:   []int{10, 20, 30, 40, 50},
-		aboveAvg: []int{30, 40, 50, 40, 30},
-	},
-	{
-		name:     "отрицательные и положительные числа", //2
-		input:    []int{-15, -3, 7, 14, 20},
-		size:     5,
-		freq:     map[int]int{-15: 1, -3: 1, 7: 1, 14: 1, 20: 1},
-		min:      -15,
-		max:      20,
-		avg:      -1,
-		mode:     []int{-15, -3, 7, 14, 20},
-		even:     []int{-15, -3, 7},
-		odd:      []int{14, 20},
-		ranges:   map[string][]int{"-15--11": {-15}, "-5--1": {-3}, "0-4": {}, "5-9": {7}, "10-14": {14}},
-		median:   7,
-		unique:   []int{-15, -3, 7, 14, 20},
-		aboveAvg: []int{7, 14, 20},
-	},
-	{
-		name:     "все одинаковые числа", //3
-		input:    []int{5, 5, 5, 5},
-		size:     10,
-		freq:     map[int]int{1: 2, 2: 2, 3: 1},
-		min:      1,
-		max:      3,
-		avg:      1,
-		mode:     []int{1, 2},
-		even:     []int{2, 2},
-		odd:      []int{1, 1, 3},
-		ranges:   map[string][]int{"0-2": {1, 1}, "3-4": {2, 2, 3}},
-		median:   2,
-		unique:   []int{1, 2, 3},
-		aboveAvg: []int{2, 2, 3},
-	},
-	{
-		name:     "пустой массив", //4
-		input:    []int{},
-		size:     0,
-		freq:     map[int]int{1: 2, 2: 2, 3: 1},
-		min:      1,
-		max:      3,
-		avg:      1,
-		mode:     []int{1, 2},
-		even:     []int{2, 2},
-		odd:      []int{1, 1, 3},
-		ranges:   map[string][]int{"0-2": {1, 1}, "3-4": {2, 2, 3}},
-		median:   2,
-		unique:   []int{1, 2, 3},
-		aboveAvg: []int{2, 2, 3},
-	},
-	{
-		name:     "возрастающие числа", //5
-		input:    []int{1, 5, 12, 15, 25},
-		size:     10,
-		freq:     map[int]int{1: 2, 2: 2, 3: 1},
-		min:      1,
-		max:      3,
-		avg:      1,
-		mode:     []int{1, 2},
-		even:     []int{2, 2},
-		odd:      []int{1, 1, 3},
-		ranges:   map[string][]int{"0-2": {1, 1}, "3-4": {2, 2, 3}},
-		median:   2,
-		unique:   []int{1, 2, 3},
-		aboveAvg: []int{2, 2, 3},
-	},
-	{
-		name:     "числа по порядку", //6
-		input:    []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-		size:     5,
-		freq:     map[int]int{1: 2, 2: 2, 3: 1},
-		min:      1,
-		max:      3,
-		avg:      1,
-		mode:     []int{1, 2},
-		even:     []int{2, 2},
-		odd:      []int{1, 1, 3},
-		ranges:   map[string][]int{"0-2": {1, 1}, "3-4": {2, 2, 3}},
-		median:   2,
-		unique:   []int{1, 2, 3},
-		aboveAvg: []int{2, 2, 3},
-	},
-	{
-		name:     "одно число", //7
-		input:    []int{10},
-		size:     10,
-		freq:     map[int]int{1: 2, 2: 2, 3: 1},
-		min:      1,
-		max:      3,
-		avg:      1,
-		mode:     []int{1, 2},
-		even:     []int{2, 2},
-		odd:      []int{1, 1, 3},
-		ranges:   map[string][]int{"0-2": {1, 1}, "3-4": {2, 2, 3}},
-		median:   2,
-		unique:   []int{1, 2, 3},
-		aboveAvg: []int{2, 2, 3},
-	},
-	{
-		name:     "отрицательные числа", //8
-		input:    []int{-10, -20, -10, -30},
-		size:     10,
-		freq:     map[int]int{1: 2, 2: 2, 3: 1},
-		min:      1,
-		max:      3,
-		avg:      1,
-		mode:     []int{1, 2},
-		even:     []int{2, 2},
-		odd:      []int{1, 1, 3},
-		ranges:   map[string][]int{"0-2": {1, 1}, "3-4": {2, 2, 3}},
-		median:   2,
-		unique:   []int{1, 2, 3},
-		aboveAvg: []int{2, 2, 3},
-	},
-	{
-		name:     "два числа", //9
-		input:    []int{1, 3},
-		size:     2,
-		freq:     map[int]int{1: 2, 2: 2, 3: 1},
-		min:      1,
-		max:      3,
-		avg:      1,
-		mode:     []int{1, 2},
-		even:     []int{2, 2},
-		odd:      []int{1, 1, 3},
-		ranges:   map[string][]int{"0-2": {1, 1}, "3-4": {2, 2, 3}},
-		median:   2,
-		unique:   []int{1, 2, 3},
-		aboveAvg: []int{2, 2, 3},
-	},
-	{
-		name:     "три числа, отрицательное, ноль и положительное", //10
-		input:    []int{-5, 0, 5},
-		size:     5,
-		freq:     map[int]int{1: 2, 2: 2, 3: 1},
-		min:      1,
-		max:      3,
-		avg:      1,
-		mode:     []int{1, 2},
-		even:     []int{2, 2},
-		odd:      []int{1, 1, 3},
-		ranges:   map[string][]int{"0-2": {1, 1}, "3-4": {2, 2, 3}},
-		median:   2,
-		unique:   []int{1, 2, 3},
-		aboveAvg: []int{2, 2, 3},
-	},
-	{
-		name:     "все нули", //11
-		input:    []int{0, 0, 0, 0},
-		size:     5,
-		freq:     map[int]int{1: 2, 2: 2, 3: 1},
-		min:      1,
-		max:      3,
-		avg:      1,
-		mode:     []int{1, 2},
-		even:     []int{2, 2},
-		odd:      []int{1, 1, 3},
-		ranges:   map[string][]int{"0-2": {1, 1}, "3-4": {2, 2, 3}},
-		median:   2,
-		unique:   []int{1, 2, 3},
-		aboveAvg: []int{2, 2, 3},
-	},
-	{
-		name:     "стандартный вариант 2", //12
-		input:    []int{3, 1, 2, 1, 2, 3},
-		size:     1,
-		freq:     map[int]int{1: 2, 2: 2, 3: 1},
-		min:      1,
-		max:      3,
-		avg:      1,
-		mode:     []int{1, 2},
-		even:     []int{2, 2},
-		odd:      []int{1, 1, 3},
-		ranges:   map[string][]int{"0-2": {1, 1}, "3-4": {2, 2, 3}},
-		median:   2,
-		unique:   []int{1, 2, 3},
-		aboveAvg: []int{2, 2, 3},
-	},
-	{
-		name:     "стандартный вариант 3", //13
-		input:    []int{1, 1, 1, 2, 2, 3},
-		size:     1,
-		freq:     map[int]int{1: 2, 2: 2, 3: 1},
-		min:      1,
-		max:      3,
-		avg:      1,
-		mode:     []int{1, 2},
-		even:     []int{2, 2},
-		odd:      []int{1, 1, 3},
-		ranges:   map[string][]int{"0-2": {1, 1}, "3-4": {2, 2, 3}},
-		median:   2,
-		unique:   []int{1, 2, 3},
-		aboveAvg: []int{2, 2, 3},
-	},
-	{
-		name:     "отрицательные и ноль", //14
-		input:    []int{0, -1, -2, -3},
-		size:     1,
-		freq:     map[int]int{1: 2, 2: 2, 3: 1},
-		min:      1,
-		max:      3,
-		avg:      1,
-		mode:     []int{1, 2},
-		even:     []int{2, 2},
-		odd:      []int{1, 1, 3},
-		ranges:   map[string][]int{"0-2": {1, 1}, "3-4": {2, 2, 3}},
-		median:   2,
-		unique:   []int{1, 2, 3},
-		aboveAvg: []int{2, 2, 3},
-	},
+	sorted   []int
 }
 
-func TestFrequency(t *testing.T) {
+func parseSlice(s string) []int {
+	if s == "" || s == "[]" {
+		return []int{}
+	}
+	sClean := strings.Replace(s, "[", "", -1)
+	sClean = strings.Replace(sClean, "]", "", -1)
+	slice := strings.Split(sClean, ";")
+	rez := []int{}
+	var val int
+	for _, v := range slice {
+		val = convertInt(v)
+		rez = append(rez, val)
+	}
+	return rez
+}
 
+func parseDictStrSlInt(s string) map[string][]int {
+	if s == "" || s == "{}" {
+		return map[string][]int{}
+	}
+	sClean := strings.Replace(s, "{", "", -1)
+	sClean = strings.Replace(sClean, "}", "", -1)
+	slice := strings.Split(sClean, "|")
+	rez := map[string][]int{}
+	var p []string
+	var key string
+	var val []int
+	for _, v := range slice {
+		p = strings.Split(v, ":")
+		key = p[0]
+		val = parseSlice(p[1])
+		rez[key] = val
+	}
+	return rez
+}
+
+func parseDictIntInt(s string) map[int]int {
+	if s == "" || s == "{}" {
+		return map[int]int{}
+	}
+	sClean := strings.Replace(s, "{", "", -1)
+	sClean = strings.Replace(sClean, "}", "", -1)
+	slice := strings.Split(sClean, ";")
+	rez := map[int]int{}
+	var p []string
+	var key, val int
+
+	for _, v := range slice {
+		p = strings.Split(v, ":")
+		key = convertInt(p[0])
+		val = convertInt(p[1])
+		rez[key] = val
+	}
+	return rez
+}
+
+func convertInt(s string) int {
+	if s == "" {
+		return 0
+	}
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		fmt.Printf("ошибка конвертации строки %q в число int\n", s)
+		os.Exit(1)
+	}
+	return i
+}
+
+func fillTests(path string) []testsType {
+
+	t := []testsType{}
+
+	f, err := os.Open(path)
+
+	if err != nil {
+		fmt.Printf("Ошибка при открытии файла")
+		os.Exit(1)
+	}
+	defer f.Close()
+
+	sc := bufio.NewScanner(f)
+	var line string
+	test := testsType{}
+	var lineSlice []string
+	i := 0
+	for sc.Scan() {
+		if i == 0 {
+			i++
+			continue
+		}
+		line = sc.Text()
+		lineSlice = strings.Split(line, ",")
+		test = testsType{
+			name:     lineSlice[0],
+			input:    parseSlice(lineSlice[1]),
+			size:     convertInt(lineSlice[2]),
+			freq:     parseDictIntInt(lineSlice[3]),
+			min:      convertInt(lineSlice[4]),
+			max:      convertInt(lineSlice[5]),
+			avg:      convertInt(lineSlice[6]),
+			mode:     parseSlice(lineSlice[7]),
+			even:     parseSlice(lineSlice[8]), //четные
+			odd:      parseSlice(lineSlice[9]), //нечетные
+			ranges:   parseDictStrSlInt(lineSlice[10]),
+			median:   convertInt(lineSlice[11]),
+			unique:   parseSlice(lineSlice[12]),
+			aboveAvg: parseSlice(lineSlice[13]),
+			sorted:   parseSlice(lineSlice[14]),
+		}
+		t = append(t, test)
+	}
+
+	if err := sc.Err(); err != nil {
+		fmt.Printf("Ошибка при чтении файла")
+		os.Exit(1)
+	}
+	return t
+}
+
+var tests []testsType
+
+func init() {
+	tests = fillTests("numbers.csv")
+}
+
+func TestSortSlice(t *testing.T) { // TestFreq
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ans := sortSlice(tt.input)              // getFreq
+			if !reflect.DeepEqual(tt.sorted, ans) { // tt.freq
+				t.Errorf("got %v, expected %v", ans, tt.sorted) // tt.freq
+			}
+		})
+	}
+}
+
+func TestFreq(t *testing.T) { // TestFreq
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ans := getFreq(tt.input)              // getFreq
+			if !reflect.DeepEqual(tt.freq, ans) { // tt.freq
+				t.Errorf("got %v, expected %v", ans, tt.freq) // tt.freq
+			}
+		})
+	}
+}
+
+func TestMin(t *testing.T) { // TestFreq
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ans := getMin(tt.input)              // getFreq
+			if !reflect.DeepEqual(tt.min, ans) { // tt.freq
+				t.Errorf("got %v, expected %v", ans, tt.min) // tt.freq
+			}
+		})
+	}
+}
+
+func TestMax(t *testing.T) { // TestFreq
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ans := getMax(tt.input)              // getFreq
+			if !reflect.DeepEqual(tt.max, ans) { // tt.freq
+				t.Errorf("got %v, expected %v", ans, tt.max) // tt.freq
+			}
+		})
+	}
+}
+
+func TestAvg(t *testing.T) { // TestFreq
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ans := getAvg(tt.input)              // getFreq
+			if !reflect.DeepEqual(tt.avg, ans) { // tt.freq
+				t.Errorf("got %v, expected %v", ans, tt.avg) // tt.freq
+			}
+		})
+	}
+}
+
+func TestMode(t *testing.T) { // TestFreq
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ans := getMode(tt.input)              // getFreq
+			if !reflect.DeepEqual(tt.mode, ans) { // tt.freq
+				t.Errorf("got %v, expected %v", ans, tt.mode) // tt.freq
+			}
+		})
+	}
+}
+
+func TestEven(t *testing.T) { // TestFreq
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ans := getEven(tt.input)              // getFreq
+			if !reflect.DeepEqual(tt.even, ans) { // tt.freq
+				t.Errorf("got %v, expected %v", ans, tt.even) // tt.freq
+			}
+		})
+	}
+}
+
+func TestOdd(t *testing.T) { // TestFreq
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ans := getOdd(tt.input)              // getFreq
+			if !reflect.DeepEqual(tt.odd, ans) { // tt.freq
+				t.Errorf("got %v, expected %v", ans, tt.odd) // tt.freq
+			}
+		})
+	}
+}
+
+func TestRanges(t *testing.T) { // TestFreq
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ans := getRanges(tt.input, tt.size)     // getFreq
+			if !reflect.DeepEqual(tt.ranges, ans) { // tt.freq
+				t.Errorf("got %v, expected %v", ans, tt.ranges) // tt.freq
+			}
+		})
+	}
+}
+
+func TestMedian(t *testing.T) { // TestFreq
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ans := getMedian(tt.input)              // getFreq
+			if !reflect.DeepEqual(tt.median, ans) { // tt.freq
+				t.Errorf("got %v, expected %v", ans, tt.median) // tt.freq
+			}
+		})
+	}
+}
+
+func TestUnique(t *testing.T) { // TestFreq
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ans := getUnique(tt.input)              // getFreq
+			if !reflect.DeepEqual(tt.unique, ans) { // tt.freq
+				t.Errorf("got %v, expected %v", ans, tt.unique) // tt.freq
+			}
+		})
+	}
+}
+
+func TestAboveAvg(t *testing.T) { // TestFreq
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ans := getAboveAvg(tt.input)              // getFreq
+			if !reflect.DeepEqual(tt.aboveAvg, ans) { // tt.freq
+				t.Errorf("got %v, expected %v", ans, tt.aboveAvg) // tt.freq
+			}
+		})
+	}
 }

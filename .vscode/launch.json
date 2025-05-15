@@ -13,7 +13,7 @@
             //     "1.txt",
             //     "2.txt"
             // ], // Аргументы командной строки
-            "program": "${fileDirname}/grouping.go"
+            "program": "${fileDirname}/numbers.go"
         }
     ]
 }
