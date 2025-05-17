@@ -145,7 +145,7 @@ func parseTests(path string) []TestCase {
 func parseTime(s string) time.Time {
 	t, err := time.Parse("2006-01-02 15:04:05", s)
 	if err != nil {
-		log.Fatalf("Ошибка при конвертации времени.")
+		log.Fatalf("Ошибка при конвертации времени для строки %s", s)
 	}
 	return t
 }
@@ -153,7 +153,7 @@ func parseTime(s string) time.Time {
 func main() {
 	t := parseTests("examples.txt")
 	for i, v := range t {
-		fmt.Printf("%d: %v\n", i, v.JSON)
+		fmt.Printf("%d: %v\n", i, v.Descr)
 	}
 
 }
