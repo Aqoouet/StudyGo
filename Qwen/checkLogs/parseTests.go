@@ -20,8 +20,6 @@ type TestCase struct {
 	JSON    string
 }
 
-var TestCases = []TestCase{}
-
 func containsTime(s string) bool {
 	_, err := time.Parse("2006-01-02 15:04:05", s)
 	return err == nil
@@ -32,6 +30,7 @@ func readTXT(path string) [][][]string {
 	if err != nil {
 		log.Fatalf("Невозможно прочитать файл %s", path)
 	}
+	defer f.Close()
 	s := bufio.NewScanner(f)
 	r := []string{}
 	previous := ""
@@ -71,14 +70,6 @@ func cutSlice(a []string) [][][]string {
 }
 
 func setCategoryAndClean(s string, previous string) string {
-
-	// name
-	// description
-	// log
-	// time
-	// console
-	// csv
-	// json
 
 	switch {
 	case s == "---":
@@ -127,6 +118,8 @@ func parseTests(path string) []TestCase {
 			json = ""
 		}
 
+		writeFile("./testData/"+name, logs)
+
 		res = append(res, TestCase{
 			Name:    name,
 			Descr:   descr,
@@ -142,18 +135,25 @@ func parseTests(path string) []TestCase {
 	return res
 }
 
+func writeFile(s string, c []string) {
+
+	// Открыть файл с правами на чтение и запись.
+	// Создать, если не существует. Очистить при открытии (O_TRUNC).
+	f, err := os.OpenFile(s, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		log.Fatalf("Невозможно открыть или создать файл %s: %v\n", s, err)
+	}
+	defer f.Close()
+
+	for _, v := range c {
+		fmt.Fprintf(f, "%s\n", v)
+	}
+}
+
 func parseTime(s string) time.Time {
 	t, err := time.Parse("2006-01-02 15:04:05", s)
 	if err != nil {
 		log.Fatalf("Ошибка при конвертации времени для строки %s", s)
 	}
 	return t
-}
-
-func main() {
-	t := parseTests("examples.txt")
-	for i, v := range t {
-		fmt.Printf("%d: %v\n", i, v.Descr)
-	}
-
 }

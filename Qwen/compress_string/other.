@@ -1,0 +1,108 @@
+package main
+
+import (
+    "reflect"
+    "testing"
+)
+
+// -----------------------------
+// Тесты для Compress
+// -----------------------------
+
+func TestCompress(t *testing.T) {
+    tests := []struct {
+        input    string
+        expected string
+    }{
+        {"aabbaaa", "a2b2a3"},
+        {"abcd", "abcd"},
+        {"aaaaaa", "a6"},
+        {"aaaabbb", "a4b3"},
+        {"", ""},
+        {"aaaaaaaaaa", "a10"},
+        {"abba", "abba"},
+        {"aaAAbbBB", "aaAA2bB2"},
+    }
+
+    for _, test := range tests {
+        result := Compress(test.input)
+        if result != test.expected {
+            t.Errorf("Compress(%q) = %q; want %q", test.input, result, test.expected)
+        }
+    }
+}
+
+// -----------------------------
+// Тесты для Decompress
+// -----------------------------
+
+func TestDecompress(t *testing.T) {
+    tests := []struct {
+        input    string
+        expected string
+        hasError bool
+    }{
+        {"a2b2a3", "aabbaaa", false},
+        {"a4b3", "aaaabbb", false},
+        {"abcd", "abcd", false},
+        {"a", "a", false},
+        {"a1z2", "azz", false},
+        {"a10", "aaaaaaaaaa", false},
+        {"a0", "", true},   // недопустимое количество
+        {"2a", "", true},   // неверный формат
+        {"a2b", "aab", false},
+        {"XYZ", "XYZ", false},
+        {"X2Y3Z", "XXYYYZ", false},
+        {"", "", false},
+    }
+
+    for _, test := range tests {
+        result, err := Decompress(test.input)
+        if test.hasError {
+            if err == nil {
+                t.Errorf("Decompress(%q) expected error, got nil", test.input)
+            }
+        } else {
+            if err != nil {
+                t.Errorf("Decompress(%q) returned unexpected error: %v", test.input, err)
+            } else if result != test.expected {
+                t.Errorf("Decompress(%q) = %q; want %q", test.input, result, test.expected)
+            }
+        }
+    }
+}
+
+// -----------------------------
+// Тесты для IsValidCompressedFormat (бонус)
+// -----------------------------
+
+func TestIsValidCompressedFormat(t *testing.T) {
+    tests := []struct {
+        input    string
+        expected bool
+    }{
+        {"a2b2a3", true},
+        {"a4b3", true},
+        {"abcd", true},
+        {"a", true},
+        {"a1z2", true},
+        {"a10", true},
+        {"a0", false},
+        {"2a", false},
+        {"a2b", true},
+        {"XYZ", true},
+        {"X2Y3Z", true},
+        {"", true},
+        {"aa22", false},
+        {"a22b1c3", true},
+        {"a2b2c", true},
+        {"abc3def2", true},
+    }
+
+    for _, test := range tests {
+        result := IsValidCompressedFormat(test.input)
+        if result != test.expected {
+            t.Errorf("IsValidCompressedFormat(%q) = %v; want %v", test.input, result, test.expected)
+        }
+    }
+}
