@@ -20,31 +20,23 @@ type TestCase struct {
 	JSON    string
 }
 
-func containsTime(s string) bool {
-	_, err := time.Parse("2006-01-02 15:04:05", s)
-	return err == nil
+var TimeFormats = []string{
+	"2006-01-02 15:04:05",
+	"2006-01-02T15:04:05Z07:00",
 }
 
-func readTXT(path string) [][][]string {
-	f, err := os.Open(path)
-	if err != nil {
-		log.Fatalf("Невозможно прочитать файл %s", path)
-	}
-	defer f.Close()
-	s := bufio.NewScanner(f)
-	r := []string{}
-	previous := ""
-	for s.Scan() {
-		row := setCategoryAndClean(s.Text(), previous)
-		if row != "" && row != "TIME1" && row != "TIME2" && row != "CSV" && row != "JSON" && row != "CONSOLE" && row != "delimiter:" {
-			r = append(r, row)
+func parseTimeAllFormats(s string) (time.Time, error) {
+
+	for _, f := range TimeFormats {
+
+		t, err := time.Parse(f, s)
+		if err == nil {
+			return t, nil
 		}
-		previous = row
+
 	}
-	if s.Err() != nil {
-		log.Fatalf("Невозможно при чтении из файла %s", path)
-	}
-	return cutSlice(r)
+	return time.Time{}, fmt.Errorf("ошибка: неверный формат времени %q", s)
+
 }
 
 func cutSlice(a []string) [][][]string {
@@ -71,6 +63,8 @@ func cutSlice(a []string) [][][]string {
 
 func setCategoryAndClean(s string, previous string) string {
 
+	_, errTime := parseTimeAllFormats(s)
+
 	switch {
 	case s == "---":
 		return "delimiter:"
@@ -82,7 +76,7 @@ func setCategoryAndClean(s string, previous string) string {
 		return ""
 	case strings.Contains(previous, "description:") || strings.Contains(previous, "log:"):
 		return "log:" + s
-	case containsTime(s) && strings.Contains(previous, "time:") || strings.Contains(previous, "TIME"):
+	case errTime == nil && strings.Contains(previous, "time:") || strings.Contains(previous, "TIME"):
 		return "time:" + s
 	case strings.Contains(previous, "console:") || strings.Contains(previous, "CONSOLE"):
 		return "console:" + s
@@ -95,8 +89,8 @@ func setCategoryAndClean(s string, previous string) string {
 	}
 }
 
-func parseTests(path string) []TestCase {
-	filesData := readTXT(path)
+func ParseTests(path string, rewrite bool) []TestCase {
+	filesData := analyzeExamplesTXT(path)
 	res := []TestCase{}
 	for _, fileData := range filesData {
 
@@ -106,8 +100,19 @@ func parseTests(path string) []TestCase {
 		if logs[0] == "(файл пуст)" {
 			logs = []string{}
 		}
-		time1 := parseTime(fileData[3][0])
-		time2 := parseTime(fileData[3][1])
+
+		time1, err := parseTimeAllFormats(fileData[3][0])
+		if err != nil {
+			log.Fatalf("Неверный формат времени в \"examples.txt\"")
+			return []TestCase{}
+		}
+
+		time2, err := parseTimeAllFormats(fileData[3][1])
+		if err != nil {
+			log.Fatalf("Неверный формат времени в \"examples.txt\"")
+			return []TestCase{}
+		}
+
 		console := fileData[4]
 		csv := fileData[5]
 		if csv[0] == "(файл не создаётся)" {
@@ -118,7 +123,13 @@ func parseTests(path string) []TestCase {
 			json = ""
 		}
 
-		writeFile("./testData/"+name, logs)
+		if rewrite {
+			dump := []string{}
+			dump = append(dump, fileData[3][0])
+			dump = append(dump, fileData[3][1])
+			dump = append(dump, logs...)
+			writeFile("./testData/"+name, dump)
+		}
 
 		res = append(res, TestCase{
 			Name:    name,
@@ -150,10 +161,50 @@ func writeFile(s string, c []string) {
 	}
 }
 
-func parseTime(s string) time.Time {
-	t, err := time.Parse("2006-01-02 15:04:05", s)
+func analyzeExamplesTXT(path string) [][][]string {
+
+	s, err := ReadTXTtoString(path)
 	if err != nil {
-		log.Fatalf("Ошибка при конвертации времени для строки %s", s)
+		log.Fatalf("Проблемы при открытии \"example.txt\".")
 	}
-	return t
+
+	r := []string{}
+	previous := ""
+	for _, str := range s {
+		row := setCategoryAndClean(str, previous)
+		if row != "" && row != "TIME1" && row != "TIME2" && row != "CSV" && row != "JSON" && row != "CONSOLE" && row != "delimiter:" {
+			r = append(r, row)
+		}
+		previous = row
+	}
+
+	result := cutSlice(r)
+
+	return result
+}
+
+func ReadTXTtoString(path string) ([]string, error) {
+
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка при открытии файла %s: %w", path, err)
+	}
+	defer f.Close()
+
+	s := bufio.NewScanner(f)
+	rez := []string{}
+	for s.Scan() {
+		rez = append(rez, s.Text())
+	}
+
+	err = s.Err()
+	if err != nil {
+		return nil, fmt.Errorf("ошибка при чтении из файла %s: %w", path, err)
+	}
+
+	if len(rez) == 0 {
+		return nil, fmt.Errorf("ошибка: файл %s пустой", path)
+	}
+
+	return rez, nil
 }

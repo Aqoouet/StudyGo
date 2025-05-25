@@ -6,23 +6,21 @@ log1.txt
 2023-10-05 14:45:00 | WARN | scheduler | Задача задержана
 2023-10-05 14:50:00 | INFO | cache | Кэш обновлён
 TIME1
-2023-10-05 14:30:00
+2023-10-05 14:35:00
 TIME2
 2023-10-05 14:40:00
 Результат:
 CONSOLE
-INFO: 2
+INFO: 0
 ERROR: 1
 DEBUG: 1
 WARN: 0
-INFO: 2
 CSV
 timestamp,level,source,message
-2023-10-05 14:30:00,INFO,app,Пользователь авторизовался
 2023-10-05 14:35:00,ERROR,db,База данных недоступна
 2023-10-05 14:40:00,DEBUG,api,Запрос к /user
 JSON
-[{"timestamp":"2023-10-05 14:30:00","level":"INFO","source":"app","message":"Пользователь авторизовался"},{"timestamp":"2023-10-05 14:35:00","level":"ERROR","source":"db","message":"База данных недоступна"},{"timestamp":"2023-10-05 14:40:00","level":"DEBUG","source":"api","message":"Запрос к /user"}]
+[{"timestamp":"2023-10-05 14:35:00","level":"ERROR","source":"db","message":"База данных недоступна"},{"timestamp":"2023-10-05 14:40:00","level":"DEBUG","source":"api","message":"Запрос к /user"}]
 
 ---
 
@@ -39,16 +37,15 @@ TIME2
 2023-10-05 14:50:00
 Результат:
 CONSOLE
-INFO: 1
-ERROR: 1
+INFO: 0
+ERROR: 0
 DEBUG: 0
 WARN: 1
 CSV
 timestamp,level,source,message
 2023-10-05 14:45:00,WARN,worker,Лог корректный
-2023-10-05 14:50:00,INFO,cache,
 JSON
-[{"timestamp":"2023-10-05 14:45:00","level":"WARN","source":"worker","message":"Лог корректный"},{"timestamp":"2023-10-05 14:50:00","level":"INFO","source":"cache","message":""}]
+[{"timestamp":"2023-10-05 14:45:00","level":"WARN","source":"worker","message":"Лог корректный"}]
 
 ---
 
@@ -313,11 +310,11 @@ TIME2
 2023-10-05 14:45:00
 Результат:
 CONSOLE
-WARNING: 1
-VERBOSE: 1
-NOTICE: 1
 FATAL: 1
+NOTICE: 1
 TRACE: 0
+VERBOSE: 1
+WARNING: 0
 CSV
 timestamp,level,source,message
 2023-10-05 14:35:00,VERBOSE,logger,Подробное сообщение
