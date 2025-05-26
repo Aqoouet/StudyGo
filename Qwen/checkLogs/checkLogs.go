@@ -12,7 +12,13 @@ import (
 // func (la *LogAnalyzer) SaveToFile(filename, format string) error
 
 var (
-	ErrLowStringNumber = errors.New("ошибка: недостаточно строк во входном файле")
+	ErrCritLowStringNumber = errors.New("критическая ошибка: недостаточно строк во входном файле")
+	ErrCritTime            = errors.New("критическая ошибка при парсинге времени")
+	ErrCritInputFile       = errors.New("критическая ошибка при открытии входного файла")
+	ErrCritEmptyLogList    = errors.New("критическая ошибка: пустой список логов")
+
+	ErrTime                 = errors.New("ошибка при парсинге времени")
+	ErrWrongLogStringFormat = errors.New("ошибка: неверный формат строки")
 )
 
 type LogEntry struct {
@@ -21,6 +27,7 @@ type LogEntry struct {
 	Source    string
 	Message   string
 	ToStat    bool
+	//ErrStr    error
 }
 
 type Statistic struct {
@@ -45,41 +52,42 @@ type LogAnalyzer struct {
 	Stat     Statistic
 }
 
-func NewLogAnalyzer(path string) (*LogAnalyzer, error) {
+func NewLogAnalyzer(path string) (*LogAnalyzer, []error) {
 
 	var err error
 	s, err := ReadTXTtoString(path)
 	if err != nil {
-		return &emptyAnalyzer, err
+		return &emptyAnalyzer, []error{fmt.Errorf("невозможно открыть входной файл: %w (%w)", err, ErrCritInputFile), err, ErrCritInputFile}
 	}
 
 	if len(s) <= 2 {
-		return &emptyAnalyzer, ErrLowStringNumber
+		return &emptyAnalyzer, []error{ErrCritLowStringNumber}
 	}
 
 	time1, err := parseTimeAllFormats(s[0])
 	if err != nil {
-		return &emptyAnalyzer, fmt.Errorf("неверный формат времени в \"examples.txt\": %s", s[0])
+		return &emptyAnalyzer, []error{fmt.Errorf("неверный формат времени в \"examples.txt\": %s (%w)", s[0], ErrCritTime)}
 	}
 
 	time2, err := parseTimeAllFormats(s[1])
 	if err != nil {
-		return &emptyAnalyzer, fmt.Errorf("неверный формат времени в \"examples.txt\": %s", s[1])
+		return &emptyAnalyzer, []error{fmt.Errorf("неверный формат времени в \"examples.txt\": %s (%w)", s[1], ErrCritTime)}
 	}
 
 	var rez []LogEntry
+	var errs []error
 	for i := 2; i < len(s); i++ {
 		v := s[i]
 		le, err := handleStringData(v)
 		if err != nil {
-			//fmt.Println(err)
+			errs = append(errs, err)
 			continue
 		}
 		rez = append(rez, le)
 	}
 
 	if rez == nil {
-		return &emptyAnalyzer, fmt.Errorf("нет логов удовлетворяющих формату")
+		return &emptyAnalyzer, []error{fmt.Errorf("нет логов удовлетворяющих формату: %w", ErrCritEmptyLogList)}
 	}
 
 	return &LogAnalyzer{
@@ -90,7 +98,7 @@ func NewLogAnalyzer(path string) (*LogAnalyzer, error) {
 			nonFiltered: rez,
 			filtered:    []LogEntry{},
 		},
-	}, err
+	}, errs
 }
 
 func (la *LogAnalyzer) FilterByPeriod(start, end time.Time) ([]LogEntry, error) {
@@ -104,7 +112,7 @@ func (la *LogAnalyzer) FilterByPeriod(start, end time.Time) ([]LogEntry, error) 
 
 	}
 	if len(rez) == 0 {
-		return nil, fmt.Errorf("нет строк удовлетворяющих временному фильтру")
+		return nil, fmt.Errorf("нет строк удовлетворяющих временному фильтру: %w", ErrCritEmptyLogList)
 	}
 
 	return rez, nil
@@ -136,12 +144,12 @@ func handleStringData(s string) (LogEntry, error) {
 	}
 
 	if len(row) <= 3 {
-		return empty, fmt.Errorf("строка %q пропущена — неверный формат", s)
+		return empty, fmt.Errorf("строка %q пропущена — %w", s, ErrWrongLogStringFormat)
 	}
 
 	for _, v := range row {
 		if len(v) == 0 {
-			return empty, fmt.Errorf("строка %q пропущена — неверный формат", s)
+			return empty, fmt.Errorf("строка %q пропущена — %w", s, ErrWrongLogStringFormat)
 		}
 	}
 
@@ -166,10 +174,15 @@ func handleStringData(s string) (LogEntry, error) {
 
 }
 
-func (la *LogAnalyzer) arrangeMessage() ([]string, string) {
+func (la *LogAnalyzer) arrangeMessage(errs []error) ([]string, string) {
 	order := []string{"INFO", "ERROR", "DEBUG", "WARN"}
 
 	var rez []string
+
+	for _, e := range errs {
+		rez = append(rez, e.Error())
+	}
+
 	added := map[string]int{}
 
 	for _, lev := range order {
@@ -206,13 +219,16 @@ func (la *LogAnalyzer) arrangeMessage() ([]string, string) {
 
 func getConsole(path string) []string {
 
-	analyzer, err := NewLogAnalyzer(path)
-	if err != nil {
-		return []string{}
+	analyzer, errs := NewLogAnalyzer(path)
+
+	for _, e := range errs {
+		if errors.Is(e, ErrCritInputFile) || errors.Is(e, ErrCritLowStringNumber) || errors.Is(e, ErrCritTime) || errors.Is(e, ErrCritEmptyLogList) {
+			return []string{e.Error()}
+		}
 	}
 	analyzer.logs.filtered, _ = analyzer.FilterByPeriod(analyzer.start, analyzer.end)
 	analyzer.Stat.data = analyzer.CountByLevel()
-	analyzer.Stat.printArray, analyzer.Stat.print = analyzer.arrangeMessage()
+	analyzer.Stat.printArray, analyzer.Stat.print = analyzer.arrangeMessage(errs)
 	// analyzer.PrintStats()
 
 	return analyzer.Stat.printArray

@@ -113,6 +113,13 @@ func ParseTests(path string, rewrite bool) []TestCase {
 			return []TestCase{}
 		}
 
+		// var console []string
+		// if fileData[4][0] == "(empty)" && len(fileData[4]) == 1 {
+		// 	console = []string{""}
+		// } else {
+		// 	console = fileData[4]
+		// }
+
 		console := fileData[4]
 		csv := fileData[5]
 		if csv[0] == "(файл не создаётся)" {

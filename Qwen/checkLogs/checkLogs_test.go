@@ -18,7 +18,7 @@ func init() {
 
 func TestGetConsole(t *testing.T) {
 	for _, tt := range testData {
-		t.Run(tt.Descr, func(t *testing.T) {
+		t.Run(tt.Name+" | "+tt.Descr, func(t *testing.T) {
 			ans := getConsole("testData/" + tt.Name)
 			if !reflect.DeepEqual(tt.Console, ans) {
 				t.Errorf("want %s, get %s", tt.Console, ans)
