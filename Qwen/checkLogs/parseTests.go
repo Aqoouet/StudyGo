@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"os"
@@ -18,25 +17,6 @@ type TestCase struct {
 	Console []string
 	CSV     []string
 	JSON    string
-}
-
-var TimeFormats = []string{
-	"2006-01-02 15:04:05",
-	"2006-01-02T15:04:05Z07:00",
-}
-
-func parseTimeAllFormats(s string) (time.Time, error) {
-
-	for _, f := range TimeFormats {
-
-		t, err := time.Parse(f, s)
-		if err == nil {
-			return t, nil
-		}
-
-	}
-	return time.Time{}, fmt.Errorf("ошибка: неверный формат времени %q", s)
-
 }
 
 func cutSlice(a []string) [][][]string {
@@ -188,30 +168,4 @@ func analyzeExamplesTXT(path string) [][][]string {
 	result := cutSlice(r)
 
 	return result
-}
-
-func ReadTXTtoString(path string) ([]string, error) {
-
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("ошибка при открытии файла %s: %w", path, err)
-	}
-	defer f.Close()
-
-	s := bufio.NewScanner(f)
-	rez := []string{}
-	for s.Scan() {
-		rez = append(rez, s.Text())
-	}
-
-	err = s.Err()
-	if err != nil {
-		return nil, fmt.Errorf("ошибка при чтении из файла %s: %w", path, err)
-	}
-
-	if len(rez) == 0 {
-		return nil, fmt.Errorf("ошибка: файл %s пустой", path)
-	}
-
-	return rez, nil
 }
