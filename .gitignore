@@ -1,5 +1,4 @@
 .vscode/launch.json
 compress_string/other.
 *log*.txt
-test/ASCII.go
-test/test.go
+
